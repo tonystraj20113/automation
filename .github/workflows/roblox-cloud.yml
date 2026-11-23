@@ -89,7 +89,8 @@ jobs:
 
       - name: Renderer dependencies
         shell: pwsh
-        run: npm install --prefix renderer --no-audit --no-fund
+        working-directory: renderer
+        run: npm install --no-audit --no-fund
 
       - name: Build and render the Short
         shell: pwsh
