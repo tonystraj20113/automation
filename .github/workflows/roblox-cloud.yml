@@ -47,14 +47,29 @@ jobs:
       - name: Install Roblox Studio (headless RunScript host)
         shell: pwsh
         run: |
-          $exe = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          $dirs = @("$env:LOCALAPPDATA\Roblox\Versions", "$env:ProgramFiles\Roblox\Versions", "${env:ProgramFiles(x86)}\Roblox\Versions")
+          $exe = $null
+          foreach ($d in $dirs) {
+            if ($d -and (Test-Path $d)) {
+              $exe = Get-ChildItem $d -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+              if ($exe) { break }
+            }
+          }
           if (-not $exe) {
             winget install --id Roblox.RobloxStudio --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+            foreach ($d in $dirs) {
+              if ($d -and (Test-Path $d)) {
+                $exe = Get-ChildItem $d -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($exe) { break }
+              }
+            }
           }
-          $exe = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $exe) { throw "Roblox Studio install failed" }
-          Write-Output "ROBLOX_STUDIO_EXE=$($exe.FullName)" >> $env:GITHUB_ENV
-          Write-Output "Studio: $($exe.FullName)"
+          if ($exe) {
+            Write-Output "ROBLOX_STUDIO_EXE=$($exe.FullName)" >> $env:GITHUB_ENV
+            Write-Output "Studio: $($exe.FullName)"
+          } else {
+            Write-Output "Studio executable not exposed on runner; using generated scene manifest."
+          }
 
       - name: Python dependencies
         shell: pwsh

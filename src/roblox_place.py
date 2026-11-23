@@ -176,12 +176,17 @@ def find_studio():
     if explicit and Path(explicit).exists():
         return explicit
     if os.name == "nt":
-        base = Path(os.environ.get("LOCALAPPDATA", "")) / "Roblox" / "Versions"
-        if base.exists():
-            found = sorted(base.glob("version-*/RobloxStudioBeta.exe"),
-                           key=lambda p: p.stat().st_mtime, reverse=True)
-            if found:
-                return str(found[0])
+        bases = [
+            Path(os.environ.get("LOCALAPPDATA", "")) / "Roblox" / "Versions",
+            Path(os.environ.get("ProgramFiles", "")) / "Roblox" / "Versions",
+            Path(os.environ.get("ProgramFiles(x86)", "")) / "Roblox" / "Versions",
+        ]
+        found = []
+        for base in bases:
+            if base.exists():
+                found.extend(base.glob("version-*/RobloxStudioBeta.exe"))
+        if found:
+            return str(sorted(found, key=lambda p: p.stat().st_mtime, reverse=True)[0])
     import shutil
     found = shutil.which("RobloxStudioBeta.exe") or shutil.which("RobloxStudio")
     return found or ""
