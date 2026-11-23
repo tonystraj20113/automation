@@ -1,7 +1,16 @@
 # StoryFacts — Style Bible (locked)
 
 ## Voice
-English, entertainment/facts. One fascinating true fact or "what if" told as a **mini-story** with a character, a turn, and a payoff. Warm, curious, never lecture-y. No filler intro ("hey guys").
+English, entertainment/facts. One fascinating true fact or "what if" told as a **mini-story** with a character, a turn, and a cliffhanger. Warm, curious, never lecture-y. No filler intro ("hey guys").
+
+**Learned from the reference channels (see `research/FINDINGS.md`):**
+- Open on a single vivid, specific image in medias res. Never "In 1900, X happened."
+- Second sentence pivots with "You see," and grounds the world.
+- Named people with a goal and a problem; concrete numbers, objects and sounds.
+- Short sentences and fragments for pace: "No flag. No men. Nobody answered."
+- Explain the cause *inside* the action, not in a separate lecture beat.
+- End on an unresolved image, not a tidy moral.
+- 200–260 words per Short (~55–80 s), 12–18 visual beats.
 
 ## Short structure (20–35 s)
 1. **0–1 s hook** — payoff first: the strangest image or line up front.

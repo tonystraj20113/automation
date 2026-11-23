@@ -34,15 +34,17 @@ def generate_short(topic, signals):
     raw = _chat("You are a precise script writer. Output JSON only.",
                 prompt("script_short", topic=topic, signals=signals))
     data = _parse_json(raw)
-    required = ("title", "hook", "proof", "beats", "ending", "story_style", "captions")
+    required = ("title", "lines", "story_style", "captions")
     for k in required:
         if k not in data:
             raise ValueError(f"Missing script field: {k}")
     if data["story_style"] not in ("ukiyo-e", "claymation"):
         data["story_style"] = "claymation"
-    scenes = data.get("scenes")
-    if not isinstance(scenes, list) or len(scenes) != len(data["captions"]):
-        data["scenes"] = [{} for _ in data["captions"]]
+    n = len(data["captions"])
+    if not isinstance(data["lines"], list) or not data["lines"]:
+        raise ValueError("Script has no narration lines")
+    if not isinstance(data["scenes"], list) or len(data["scenes"]) != n:
+        data["scenes"] = [{} for _ in range(n)]
     return data
 
 def generate_long(stories):

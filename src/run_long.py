@@ -2,7 +2,7 @@
 import json
 from datetime import datetime, timedelta, timezone
 from .utils import ROOT, ensure_dirs, write_json, env
-from . import scripts, tts, render
+from . import scripts, tts, render, audio_mix
 
 def main():
     ensure_dirs()
@@ -15,8 +15,7 @@ def main():
     for f in files:
         d = json.loads(f.read_text(encoding="utf-8"))
         s = d["script"]
-        stories.append({"title": s["title"], "hook": s["hook"], "proof": s["proof"],
-                        "beats": s["beats"], "ending": s["ending"],
+        stories.append({"title": s["title"], "lines": s["lines"],
                         "story_style": s["story_style"]})
     print(f"[1/4] compiling {len(stories)} stories")
     script = scripts.generate_long(stories)
@@ -30,12 +29,20 @@ def main():
         lines.append(ch["narration"])
         captions.append(ch["title"])
     lines.append(script["closing"])
-    audio = tts.synthesize(lines, str(base) + ".mp3")
-    dur = tts.duration(audio)
-    srt = tts.write_srt(captions, dur, str(base) + ".srt")
+    captions.append("What we learned")
+    voice, durs = tts.synthesize_lines(lines, str(base) + "_voice.mp3")
+    dur = sum(durs)
+    boundaries, t = [], 0.0
+    for d in durs[:-1]:
+        t += d
+        boundaries.append(t)
+    audio = audio_mix.add_bed(voice, str(base) + ".mp3",
+                              boundaries=boundaries, total_duration=dur)
+    srt = tts.write_srt_timed(captions, durs, str(base) + ".srt")
     video = render.render_video(captions, audio, srt, str(base) + ".mp4",
                                 style="claymation", w=1920, h=1080,
-                                title=script["title"])
+                                title=script["title"], durations=durs,
+                                subframes=8, sfx=True)
     print(f"[3/4] rendered {video} ({dur/60:.1f} min)")
 
     meta = {"date": datetime.now(timezone.utc).isoformat(), "script": script,

@@ -151,9 +151,10 @@ def _city(d, w, h, pal, rng, y0):
         x += bw * 1.06
 
 
-def _clouds(img, w, h, pal, rng, count=7):
+def _clouds(img, w, h, pal, rng, count=7, phase=0.0):
     for _ in range(count):
-        cx = rng.uniform(0, w); cy = rng.uniform(h * 0.05, h * 0.42)
+        cx = rng.uniform(0, w) + phase * w * 0.06
+        cy = rng.uniform(h * 0.05, h * 0.42)
         cw = w * rng.uniform(0.10, 0.26); ch = cw * rng.uniform(0.22, 0.36)
         col = _rgba(pal["foam"], rng.randint(45, 110))
         layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -165,11 +166,11 @@ def _clouds(img, w, h, pal, rng, count=7):
         img.alpha_composite(layer)
 
 
-def _stars(d, w, h, pal, rng, count=60):
+def _stars(d, w, h, pal, rng, count=60, phase=0.0):
     for _ in range(count):
         x, y = rng.uniform(0, w), rng.uniform(0, h * 0.6)
         r = w * rng.uniform(0.0015, 0.005)
-        a = rng.randint(120, 255)
+        a = int(rng.randint(120, 255) * (0.78 + 0.22 * math.sin(phase * 6.28 + x)))
         d.ellipse((x-r, y-r, x+r, y+r), fill=_rgba(pal["foam"], a))
         if r > w * 0.003:
             d.line((x-r*3, y, x+r*3, y), fill=_rgba(pal["foam"], a//2), width=1)
@@ -184,9 +185,9 @@ def _disk(d, w, h, pal, cx, cy, r, color=None, ring=True):
                   outline=_rgba(pal["foam"], 110), width=max(2, int(w*0.003)))
 
 
-def _petals(d, w, h, pal, rng, count=26):
+def _petals(d, w, h, pal, rng, count=26, phase=0.0):
     for _ in range(count):
-        x, y = rng.uniform(0, w), rng.uniform(0, h)
+        x, y = rng.uniform(0, w), (rng.uniform(0, h) + phase * h * 0.05) % h
         s = w * rng.uniform(0.005, 0.013)
         a = rng.uniform(0, math.pi)
         d.ellipse((x-s, y-s*0.5, x+s, y+s*0.5),
@@ -341,7 +342,7 @@ def draw_prop(d, name, cx, cy, size, pal):
 # ---------------------------------------------------------------------------
 # Scene composer
 # ---------------------------------------------------------------------------
-def compose_scene(spec, w, h, mascot_img=None, index=0):
+def compose_scene(spec, w, h, mascot_img=None, index=0, phase=0.0):
     """Return a richly illustrated RGB frame for one story beat."""
     style = spec.get("style", "claymation")
     if style not in PALETTES:
@@ -369,7 +370,7 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
               color=pal["foam"] if motif != "ocean" else pal["accent"])
 
     if style == "ukiyo-e":
-        _stars(d, w, h, pal, rng, 40) if motif in ("space", "night") else _birds(d, w, h, pal, rng, 5)
+        _stars(d, w, h, pal, rng, 40, phase) if motif in ("space", "night") else _birds(d, w, h, pal, rng, 5)
         if motif in ("ocean", "river"):
             _waves(d, w, h, pal, rng, h * 0.42, layers=5)
         elif motif in ("mountains", "forest"):
@@ -379,10 +380,10 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
         elif motif == "city":
             _city(d, w, h, pal, rng, h * 0.62)
         else:
-            _clouds(img, w, h, pal, rng, 6)
+            _clouds(img, w, h, pal, rng, 6, phase)
             d = ImageDraw.Draw(img)
             d.rectangle((0, h * 0.72, w, h), fill=pal["ground"])
-        _petals(d, w, h, pal, rng, 22)
+        _petals(d, w, h, pal, rng, 22, phase)
     else:  # claymation
         # soft parallax hills
         for j, (col, y) in enumerate([(pal["hill_far"], 0.52), (pal["hill_near"], 0.64)]):
@@ -403,8 +404,8 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
         elif motif in ("mountains", "forest"):
             _mountains(d, w, h, pal, rng, h * 0.58)
         if motif in ("sky", "night", "space"):
-            _stars(d, w, h, pal, rng, 50)
-        _clouds(img, w, h, pal, rng, 5)
+            _stars(d, w, h, pal, rng, 50, phase)
+        _clouds(img, w, h, pal, rng, 5, phase)
 
     # foreground texture so the lower third is never a flat empty block
     d = ImageDraw.Draw(img)
@@ -413,7 +414,8 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
     # props float in the mid-ground with a soft shadow
     if props:
         positions = [(w * 0.24, h * 0.40), (w * 0.76, h * 0.46)]
-        for p, (px, py) in zip(props, positions):
+        for p, (px, py0) in zip(props, positions):
+            py = py0 + math.sin(phase * 6.28 + px) * h * 0.008
             ps = w * 0.13
             _soft_shadow(img, (px-ps*.6, py+ps*.5, px+ps*.6, py+ps*.75), int(w*0.02), 70)
             d = ImageDraw.Draw(img)
@@ -428,6 +430,7 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
             mx, my = int(w - mw - w*0.05), int(h - mw - h*0.02)
         else:
             mx, my = int((w - mw) / 2), int(h * 0.55)
+        my += int(math.sin(phase * 6.28 + 0.8) * h * 0.006)
         _soft_shadow(img, (mx+mw*.1, my+mw*.88, mx+mw*.9, my+mw*1.02),
                      int(w*0.02), 110)
         rim = Image.new("RGBA", img.size, (0, 0, 0, 0))

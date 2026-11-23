@@ -5,7 +5,7 @@ rendered file has a public release URL.
 import argparse, json
 from datetime import datetime, timedelta, timezone
 from .utils import ROOT, ensure_dirs, write_json, env
-from . import research, scripts, tts, render
+from . import research, scripts, tts, render, audio_mix
 
 TOPICS = [
     "a tiny decision that changed a whole city",
@@ -61,15 +61,21 @@ def main():
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
     base = ROOT / "output" / f"short-{stamp}"
-    audio = tts.synthesize([script["hook"], script["proof"], *script["beats"], script["ending"]],
-                           str(base) + ".mp3")
-    dur = tts.duration(audio)
-    srt = tts.write_srt(script["captions"], dur, str(base) + ".srt")
-    print(f"[3/5] audio {dur:.1f}s")
+    voice, durs = tts.synthesize_lines(script["lines"], str(base) + "_voice.mp3")
+    total = sum(durs)
+    boundaries, t = [], 0.0
+    for d in durs[:-1]:
+        t += d
+        boundaries.append(t)
+    audio = audio_mix.add_bed(voice, str(base) + ".mp3",
+                              boundaries=boundaries, total_duration=total)
+    srt = tts.write_srt_timed(script["captions"], durs, str(base) + ".srt")
+    print(f"[3/5] audio {total:.1f}s")
 
     video = render.render_video(script["captions"], audio, srt, str(base) + ".mp4",
                                 style=script["story_style"], w=1080, h=1920,
-                                title=script["title"], specs=script.get("scenes"))
+                                title=script["title"], specs=script.get("scenes"),
+                                durations=durs, subframes=8, sfx=True)
     print(f"[4/5] rendered {video}")
 
     meta = {
@@ -77,7 +83,7 @@ def main():
         "topic": topic,
         "script": script,
         "video": str(video),
-        "duration": dur,
+        "duration": total,
     }
     write_json(ROOT / "data" / "shorts" / f"{stamp}.json", meta)
 
