@@ -1,0 +1,9 @@
+{
+  "name": "storyfacts-roblox-renderer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Headless renderer for the Roblox Studio-authored blocky world",
+  "dependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

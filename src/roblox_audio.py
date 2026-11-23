@@ -1,0 +1,155 @@
+"""One audio bed + the single timing source used by picture and captions.
+
+All music and foley are synthesised locally: square marimba, soft bass, clicks
+and paper whooshes. Nothing is downloaded or copyrighted.
+"""
+import json
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
+from scipy.signal import butter, sosfilt
+
+SR = 24000
+PAUSE = 0.13
+TAIL = 0.62
+MOVES = ["push", "slide", "tilt", "crash", "push", "pan", "snap", "tilt", "locked",
+         "push", "pull", "crash", "pan", "snap", "push", "slide", "tilt", "push"]
+rng = np.random.default_rng(23)
+
+
+def _place(buf, sound, at, gain=1.0):
+    i = int(at * SR)
+    j = min(len(buf), i + len(sound))
+    if i < len(buf) and j > i:
+        buf[i:j] += sound[:j - i] * gain
+
+
+def _blip(freq, dur, gain=1.0, wave="square"):
+    n = int(dur * SR)
+    tt = np.arange(n) / SR
+    if wave == "square":
+        y = np.sign(np.sin(2 * np.pi * freq * tt)) * 0.55 + 0.45 * np.sin(4 * np.pi * freq * tt)
+    else:
+        y = np.sin(2 * np.pi * freq * tt) + 0.35 * np.sin(6 * np.pi * freq * tt)
+    env = np.exp(-tt * 6) * (1 - np.exp(-tt * 500))
+    return (y * env * gain).astype(np.float32)
+
+
+def _bass(freq, dur, gain=1.0):
+    n = int(dur * SR)
+    tt = np.arange(n) / SR
+    f = freq + 12 * np.exp(-tt * 8)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR)
+    return (y * np.minimum(1, tt / 0.02) * np.exp(-tt * 2.8) * gain * 0.45).astype(np.float32)
+
+
+def _click(gain=1.0):
+    n = int(0.075 * SR)
+    tt = np.arange(n) / SR
+    return (rng.standard_normal(n) * np.exp(-tt * 150) * gain * 0.35).astype(np.float32)
+
+
+def _whoosh(dur=0.5, gain=1.0):
+    n = int(dur * SR)
+    tt = np.arange(n) / SR
+    x = sosfilt(butter(3, (300, 2400), fs=SR, btype="bandpass", output="sos"),
+                rng.standard_normal(n))
+    env = np.sin(np.pi * np.clip(tt / dur, 0, 1)) ** 1.5
+    y = x * env * gain
+    return (y / (np.max(np.abs(y)) or 1) * 0.28).astype(np.float32)
+
+
+def _srt_time(s):
+    h, m = int(s // 3600), int((s % 3600) // 60)
+    sec = s % 60
+    return f"{h:02d}:{m:02d}:{sec:06.3f}".replace(".", ",")
+
+
+def build(script, voice_dir, out_dir):
+    """Return (duration, timeline list). Writes mix.wav, timeline.js, SRT."""
+    voice_dir, out_dir = Path(voice_dir), Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    lines = script["lines"]
+    durs = json.loads((voice_dir / "dur.json").read_text(encoding="utf-8"))
+    spans, t = [], 0.0
+    for i in range(len(lines)):
+        d = float(durs[f"{i:02d}"])
+        spans.append((t, t + d))
+        t += d + PAUSE
+    dur = t - PAUSE + TAIL
+    n = int(dur * SR)
+
+    voice = np.zeros(n, dtype=np.float32)
+    for i, (a, _) in enumerate(spans):
+        x, sr = sf.read(str(voice_dir / f"{i:02d}.wav"), dtype="float32")
+        if sr != SR:
+            x = np.interp(np.arange(int(len(x) * SR / sr)) * sr / SR,
+                          np.arange(len(x)), x).astype(np.float32)
+        _place(voice, x, a)
+    voice /= (np.max(np.abs(voice)) or 1) / 0.93
+
+    music = np.zeros(n, dtype=np.float32)
+    foley = np.zeros(n, dtype=np.float32)
+    notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23]
+    step, k = 0.0, 0
+    while step < dur:
+        quiet = len(spans) > 8 and spans[len(spans) // 2][0] < step < spans[len(spans) // 2 + 1][0]
+        gain = 0.032 if quiet else 0.06
+        _place(music, _blip(notes[k % len(notes)], 0.26, gain), step)
+        if k % 4 == 0:
+            _place(music, _bass(notes[(k // 4) % 3] / 2, 0.52, 0.7), step)
+        step += 0.39
+        k += 1
+
+    for idx in (3, 7, 10, 12, 13, 14):
+        if idx >= len(spans):
+            continue
+        a = spans[idx][0]
+        _place(foley, _whoosh(0.55, 0.9), a - 0.12)
+        _place(foley, _blip(220 if idx % 2 else 165, 0.75, 0.2, "sine"), a)
+    for a, _ in spans:
+        _place(foley, _click(0.35), a)
+    _place(foley, _blip(880, 1.4, 0.15, "sine"), spans[-1][0])
+
+    env = np.sqrt(np.convolve(voice * voice, np.ones(1200) / 1200, mode="same") + 1e-12)
+    env /= np.percentile(env, 90) or 1
+    duck = np.clip(1 - 0.58 * np.clip(env, 0, 1), 0.36, 1).astype(np.float32)
+    music *= duck
+    amb = rng.standard_normal(n)
+    amb = sosfilt(butter(3, 500, fs=SR, output="sos"), amb)
+    amb = (amb / (np.max(np.abs(amb)) or 1) * 0.04 * (0.7 + 0.3 * duck)).astype(np.float32)
+    mix = voice + music + amb + foley
+    mix /= (np.max(np.abs(mix)) or 1) / 0.95
+    sf.write(str(out_dir / "mix.wav"), mix.astype(np.float32), SR, subtype="PCM_16")
+
+    captions = script["captions"]
+    timeline = []
+    for i, (a, b) in enumerate(spans):
+        timeline.append({
+            "t0": round(a, 3), "t1": round(b + 0.12, 3),
+            "caption": captions[i] if i < len(captions) else lines[i][:34],
+            "title": (captions[i] if i < len(captions) else str(i)).upper()[:18],
+            "view": i, "move": MOVES[i % len(MOVES)],
+        })
+    (out_dir / "timeline.js").write_text(
+        "// generated by src/roblox_audio.py\nwindow.SF_TIMINGS = "
+        + json.dumps(timeline, indent=1) + ";\nwindow.SF_DUR = " + f"{dur:.3f};\n",
+        encoding="utf-8")
+
+    words = []
+    for i, (line, (a, b)) in enumerate(zip(lines, spans)):
+        ws = line.split()
+        w = np.array([len(x.strip(".,'’")) + 1.5 for x in ws], dtype=float)
+        w /= w.sum()
+        cur = a
+        for word, frac in zip(ws, w):
+            end = cur + (b - a) * frac
+            words.append([round(cur, 3), round(end, 3), word])
+            cur = end
+    (out_dir / "words.json").write_text(json.dumps(words), encoding="utf-8")
+    with (out_dir / "captions.srt").open("w", encoding="utf-8") as f:
+        for i, row in enumerate(timeline, 1):
+            f.write(f"{i}\n{_srt_time(row['t0'])} --> {_srt_time(row['t1'])}\n{row['caption']}\n\n")
+    print(f"[audio] {dur:.2f}s, {len(timeline)} beats")
+    return dur, timeline

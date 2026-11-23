@@ -1,0 +1,120 @@
+name: Roblox Studio cloud Shorts
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Optional topic id from config/topics.json (blank = auto)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  film:
+    runs-on: windows-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Kokoro voice model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/storyfacts-kokoro
+          key: kokoro-v1.1
+
+      - name: Install ffmpeg
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            winget install --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+            Write-Output "$env:LOCALAPPDATA\Microsoft\WinGet\Links" >> $env:GITHUB_PATH
+          }
+          ffmpeg -version | Select-Object -First 1
+
+      - name: Install Roblox Studio (headless RunScript host)
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) {
+            winget install --id Roblox.RobloxStudio --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+          }
+          $exe = Get-ChildItem "$env:LOCALAPPDATA\Roblox\Versions" -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) { throw "Roblox Studio install failed" }
+          Write-Output "ROBLOX_STUDIO_EXE=$($exe.FullName)" >> $env:GITHUB_ENV
+          Write-Output "Studio: $($exe.FullName)"
+
+      - name: Python dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install yt-dlp kokoro-onnx espeakng-loader numpy scipy soundfile
+
+      - name: Renderer dependencies
+        shell: pwsh
+        run: npm install --prefix renderer --no-audit --no-fund
+
+      - name: Build and render the Short
+        shell: pwsh
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          YOUTUBE_CLIENT_SECRET_B64: ${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}
+          YOUTUBE_TOKEN_B64: ${{ secrets.YOUTUBE_TOKEN_B64 }}
+          YT_PUBLISH_PRIVACY: ${{ secrets.YT_PUBLISH_PRIVACY }}
+          YT_MADE_FOR_KIDS: ${{ secrets.YT_MADE_FOR_KIDS }}
+          PYTHONIOENCODING: utf-8
+          VIDEOHUB_ENCODER: x264
+        run: python -m src.run_roblox_short --topic "${{ github.event.inputs.topic }}"
+
+      - name: Stage release asset
+        shell: pwsh
+        run: |
+          $f = Get-ChildItem output\roblox-* -Recurse -Filter final.mp4 | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $f) { throw "No final.mp4 found" }
+          Copy-Item $f.FullName output\latest-short.mp4 -Force
+
+      - name: Keep a downloadable copy of the film
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-short
+          path: output/latest-short.mp4
+          retention-days: 30
+
+      - name: Public media URL for Instagram
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: roblox-${{ github.run_id }}
+          files: output/latest-short.mp4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Instagram Reel
+        shell: pwsh
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          RELEASE_URL: https://github.com/${{ github.repository }}/releases/download/roblox-${{ github.run_id }}/latest-short.mp4
+        run: python -m src.run_roblox_short --ig-only --release-url "$env:RELEASE_URL"
+
+      - name: Commit metadata and place list
+        shell: pwsh
+        run: |
+          git config user.name "storyfacts-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/shorts config/topics.json data/performance.json || true
+          git commit -m "Roblox Studio Short $(Get-Date -Format yyyy-MM-dd)" || true
+          git push || true

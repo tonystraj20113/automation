@@ -1,0 +1,89 @@
+{
+  "lost-property": {
+    "title": "The Lost Property Office 🧸",
+    "hook": "In this town, the lost-and-found office is never empty. Whatever you leave there comes back the next morning with a note in someone else's handwriting.",
+    "lines": [
+      "In this town, the lost-and-found office is never empty.",
+      "You see, every morning at 7:03, a new box appears on the counter.",
+      "Inside is whatever you lost yesterday, with a note in someone else's handwriting.",
+      "Milo was twelve, and he had lost exactly one thing: a small red toy car.",
+      "He had looked under the bed, behind the sofa, and inside his school bag.",
+      "On Tuesday, the box on the counter had his name on it.",
+      "The note said: DO NOT OPEN IT HERE.",
+      "Anya, the new girl, said her note had said the same thing.",
+      "So they carried the box outside to the empty bus stop.",
+      "Inside was the car, and a tiny paper door with a keyhole.",
+      "The car was warm. The paper door had no handle.",
+      "A shadow moved behind them. It was their own shadows, standing perfectly still.",
+      "Then the box spoke, in Milo's own handwriting: YOU'RE EARLY.",
+      "The paper door opened by itself, and the little red car drove in.",
+      "Milo looked at Anya. Her shadow was gone."
+    ],
+    "captions": [
+      "Never empty", "7:03 exactly", "A strange note", "One red car",
+      "Nowhere to be found", "His name on it", "Do not open", "Same note",
+      "The bus stop", "A paper door", "No handle", "Shadows froze",
+      "You're early", "The car drove in", "Her shadow gone"
+    ],
+    "scenes": [
+      {"motif": "street", "props": ["door"], "mood": "mystery"},
+      {"motif": "street", "props": ["clock"], "mood": "mystery"},
+      {"motif": "room", "props": ["book"], "mood": "mystery"},
+      {"motif": "room", "props": ["coin"], "mood": "curious"},
+      {"motif": "room", "props": ["chest"], "mood": "curious"},
+      {"motif": "street", "props": ["key"], "mood": "mystery"},
+      {"motif": "room", "props": ["book"], "mood": "spooky"},
+      {"motif": "street", "props": ["map"], "mood": "mystery"},
+      {"motif": "street", "props": ["door"], "mood": "mystery"},
+      {"motif": "night", "props": ["door"], "mood": "spooky"},
+      {"motif": "night", "props": ["key"], "mood": "spooky"},
+      {"motif": "night", "props": ["moon"], "mood": "spooky"},
+      {"motif": "night", "props": ["phone"], "mood": "spooky"},
+      {"motif": "night", "props": ["door"], "mood": "mystery"},
+      {"motif": "night", "props": ["star"], "mood": "spooky"}
+    ],
+    "tags": ["shorts", "story", "mystery", "animation"],
+    "safety": "Original fictional story with children in a safe everyday setting; no violence, brands, fear tactics or sensitive topics."
+  },
+  "shadow-runner": {
+    "title": "In This Town, Your Shadow Leaves First",
+    "hook": "In this town, your shadow clocks in before you do. Every morning at 7:03 it takes its place in line.",
+    "lines": [
+      "In this town, your shadow clocks in before you do.",
+      "You see, every morning at 7:03, every shadow stands in line at the bus stop.",
+      "Milo was twelve, and his shadow had never once been early. Until Tuesday.",
+      "That morning, it walked past the school and past the bakery.",
+      "It stopped at the locked theater, holding a red ticket.",
+      "At school, the teacher asked everyone to draw what their shadow did last night.",
+      "Milo drew a straight line. Every other kid drew the same line.",
+      "Then the new girl, Anya, drew a door.",
+      "Nobody spoke. Even the shadows on the wall stayed perfectly still.",
+      "At recess, Milo followed his shadow back to the theater.",
+      "The doors opened by themselves. Empty seats faced one glowing screen.",
+      "On the screen, Milo saw tomorrow. His shadow sat in the principal's chair.",
+      "Beside it, every other shadow in town was signing something.",
+      "Milo looked down. His shadow was gone.",
+      "Then a voice from the screen said, You're early."
+    ],
+    "captions": ["Clocked in first", "7:03 line", "Never early", "Past the bakery", "A red ticket", "Draw last night", "The same line", "Anya drew a door", "Shadows froze", "He followed it", "Doors opened", "Tomorrow", "Signing something", "Shadow gone", "You're early"],
+    "scenes": [
+      {"motif": "street", "props": ["clock"], "mood": "mystery"},
+      {"motif": "street", "props": ["clock"], "mood": "mystery"},
+      {"motif": "street", "props": ["key"], "mood": "curious"},
+      {"motif": "street", "props": ["book"], "mood": "mystery"},
+      {"motif": "street", "props": ["door"], "mood": "mystery"},
+      {"motif": "room", "props": ["book"], "mood": "curious"},
+      {"motif": "room", "props": ["book"], "mood": "mystery"},
+      {"motif": "room", "props": ["door"], "mood": "mystery"},
+      {"motif": "room", "props": ["moon"], "mood": "spooky"},
+      {"motif": "street", "props": ["door"], "mood": "mystery"},
+      {"motif": "night", "props": ["door"], "mood": "spooky"},
+      {"motif": "night", "props": ["phone"], "mood": "spooky"},
+      {"motif": "night", "props": ["book"], "mood": "spooky"},
+      {"motif": "night", "props": ["star"], "mood": "spooky"},
+      {"motif": "night", "props": ["key"], "mood": "mystery"}
+    ],
+    "tags": ["shorts", "story", "mystery", "animation"],
+    "safety": "Original fictional world-rule story; no violence, brands, sensitive topics or unsafe behaviour."
+  }
+}

@@ -1,48 +1,78 @@
-# StoryFacts Automation
+# StoryFacts — Roblox Studio cloud Shorts
 
-Free, unattended YouTube + Instagram pipeline: research competitors → write story-fact scripts → render Shorts and a weekly long video → publish/schedule.
+Free, unattended YouTube + Instagram pipeline. The **world is built inside Roblox Studio** and the whole pipeline runs in **GitHub Actions cloud** — no local machine needed after setup, no card, no paid APIs.
 
-**Cadence:** 5 Shorts/week (Mon–Fri) + 1 long video/week (Sunday).
+## The cloud/Studio route (verified against Roblox's official CLI docs)
 
-**Stack (all free, no card):** public GitHub Actions, Groq Free API, edge-tts, ffmpeg, Python (Pillow + resvg-py), YouTube Data API, Instagram Graph API.
+Roblox Studio is a Windows GUI app, but it ships an official headless task:
 
-**Visuals:** every beat is a distinct illustrated scene — two locked art directions (ukiyo-e for history/folklore/nature, claymation for funny/science/modern), story-specific props, the clay-cat host, texture, vignette, caption cards and subtle Ken Burns motion.
+```text
+RobloxStudioBeta.exe --task RunScript --runScriptFile build_place.luau \
+  --outputFile studio.log --quitAfterExecution
+```
 
-## Repository layout
-- `config/channels.json` — competitor list + brand settings
-- `config/style_bible.md` — channel voice, visual rules, mascot spec
-- `prompts/` — LLM prompt templates
-- `src/` — pipeline code
-- `assets/mascot.svg` — locked 2D clay-cat mascot (3D-look, softened)
-- `.github/workflows/` — schedulers
+`--task RunScript` runs Luau at command-bar permission level. Omitting `--placeId` opens the default Baseplate, so **no Roblox login is needed**. Our generated Luau script:
 
-## One-time setup
-1. Create an **empty public** repository on GitHub (public = unlimited free Actions minutes).
-2. Push this folder to it:
+1. clears the Baseplate and builds every block, stickman and prop in the DataModel,
+2. exports the editable `.rbxl` place into the run folder,
+3. prints `SCENE_JSON:` with every part's transform/colour to `--outputFile`,
+4. quits.
+
+The cloud renderer reads that manifest and frames the **same parts** with cinematic camera cuts and captions. So art direction happens in Studio (add/move/colour parts), not by editing style code.
+
+## Pipeline
+
+`src/run_roblox_short.py`
+
+1. `src/research.py` + `src/self_improve.py` — free public competitor/keyword signals and topic scoring.
+2. `src/roblox_story.py` — Groq Free writes a 15-line Gneef-grammar world-rule story (JSON script + 15 Studio sets).
+3. `src/kokoro_tts.py` — Kokoro voice, locally generated from free public model files (cached in Actions).
+4. `src/roblox_audio.py` — original toy-box score/foley, `mix.wav`, SRT and the single `timeline.js` timing source.
+5. `src/roblox_place.py` — builds the real Roblox place headlessly and exports `scene.json` + `.rbxl`.
+6. `src/render_roblox.py` — headless Edge + three.js renders the Studio-built parts at 1080×1920, ffmpeg muxes audio.
+7. YouTube Data API schedules the Short; a public GitHub Release URL feeds Instagram Reels.
+
+Daily `src/self_improve.py` scans competitor Shorts with yt-dlp, scores our own videos, and writes new low-competition premises into `config/topics.json`. The next film automatically uses the best unused premise.
+
+## Cadence
+
+- Mon–Fri 06:00 UTC: one Roblox Studio Short (`roblox-cloud.yml`).
+- Daily 04:30 UTC: self-analysis (`self-improve.yml`).
+
+## One-time setup (all free)
+
+1. Create an **empty public** GitHub repository (public = unlimited free Actions minutes).
+2. Push this folder:
    ```bash
    git remote add origin https://github.com/<YOUR_USERNAME>/<REPO>.git
    git branch -M main
    git push -u origin main
    ```
-3. Add these **Secrets** under Settings → Secrets → Actions:
-   - `GROQ_API_KEY` — free key from https://console.groq.com
-   - `YOUTUBE_CLIENT_SECRET_B64` — base64 of your OAuth client_secret.json
-   - `YOUTUBE_TOKEN_B64` — base64 of the authorized token.json (generate once locally with `scripts/youtube_auth.py`)
-   - `IG_ACCESS_TOKEN` — Meta Graph API token (IG professional account)
-   - `IG_USER_ID` — Instagram professional account ID
-   - `YT_PUBLISH_PRIVACY` — optional, default `private` (change to `public` after testing)
-   - `YT_MADE_FOR_KIDS` — optional, default `false` (general audience)
-3. Enable the YouTube Data API v3 in the same Google Cloud project as the OAuth client.
-4. Meta app: Instagram Graph API with `instagram_content_publish` + `pages_read_engagement`. Token must be long-lived.
-5. For Instagram, rendered videos must be at a **public URL**. The workflow uploads each render as a GitHub Release asset and passes that URL to the publisher.
+3. Add Actions Secrets:
+   - `GROQ_API_KEY` — https://console.groq.com (free)
+   - `YOUTUBE_API_KEY` — YouTube Data API v3 key
+   - `YOUTUBE_CLIENT_SECRET_B64` — base64 of `client_secret.json`
+   - `YOUTUBE_TOKEN_B64` — base64 of an authorized `token.json`
+   - `IG_ACCESS_TOKEN`, `IG_USER_ID` — Instagram Graph API (professional account)
+   - `YT_PUBLISH_PRIVACY` — `private` while testing; `public` once approved
+   - `YT_MADE_FOR_KIDS` — `false`
+4. The workflow installs Roblox Studio and ffmpeg with `winget`, installs `puppeteer-core`, caches Kokoro, then runs everything. Nothing is installed on your PC.
 
-## Local dry run
-```bash
-pip install -r requirements.txt
-export GROQ_API_KEY=...
-python -m src.run_shorts --dry-run
-```
-`--dry-run` writes the script, storyboard and audio but skips upload.
+## Manual test
+
+In GitHub: **Actions → Roblox Studio cloud Shorts → Run workflow**. Leave the topic blank for auto-selection, or type an id from `config/topics.json`.
+
+Locally (optional): `winget install --id Roblox.RobloxStudio`, then
+`python -m src.run_roblox_short --dry-run --topic lost-property`.
+
+## Monetisation and originality guardrails
+
+- Original stories only; no Roblox logos/branding, no copied scripts, titles, characters or assets.
+- Blocky toy look is built from primitives; no third-party models or music.
+- No violence, gore, romance, hate, crime, danger, self-harm, profanity or sensitive news.
+- The generator rejects scripts containing blocked words; `safety` is recorded in every story JSON.
+- Videos are `Made for kids = false`, general audience.
 
 ## Cost
-$0. No paid APIs, no card, no laptop required after setup.
+
+$0. GitHub Actions (public repo free tier), Groq Free, Kokoro/edge-free public models, YouTube Data API free quota, Instagram Graph API, GitHub Releases for media URLs.

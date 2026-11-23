@@ -1,8 +1,7 @@
 name: StoryFacts Weekly Long (Sunday)
 
 on:
-  schedule:
-    - cron: "0 7 * * 0"
+  # Superseded while the Roblox Studio visual system is being validated.
   workflow_dispatch:
 
 jobs:

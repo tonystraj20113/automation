@@ -1,8 +1,7 @@
 name: StoryFacts Shorts (Mon-Fri)
 
 on:
-  schedule:
-    - cron: "0 6 * * 1-5"
+  # Superseded by roblox-cloud.yml (Roblox Studio + Kokoro). Manual use only.
   workflow_dispatch:
 
 permissions:

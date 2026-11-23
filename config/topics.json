@@ -1,0 +1,12 @@
+{
+  "_note": "Low-direct-competition, high-adjacent-demand world-rule premises. Scores are updated by src/self_improve.py.",
+  "topics": [
+    {"id": "lost-property", "title": "The Lost Property Office", "hook": "In this town, the lost-and-found office is never empty. Whatever you leave there comes back the next morning with a note in someone else's handwriting.", "score": 9.5, "status": "pending"},
+    {"id": "unfinished-letters", "title": "Library of Unfinished Letters", "hook": "In this library, every unfinished letter is returned answered. Nobody remembers writing the replies.", "score": 9.5, "status": "pending"},
+    {"id": "umbrella-stand", "title": "The Umbrella Stand", "hook": "In this town, an umbrella appears at the school door for every storm that never happened.", "score": 9.0, "status": "pending"},
+    {"id": "shadow-runner", "title": "Your Shadow Leaves First", "hook": "In this town, your shadow clocks in before you do. Every morning at 7:03 it takes its place in line.", "score": 8.8, "status": "sample"},
+    {"id": "ticket-window", "title": "The Ticket Window", "hook": "In this station, the ticket seller sells seats to places that do not exist yet.", "score": 8.7, "status": "pending"},
+    {"id": "second-bell", "title": "The Second Bell", "hook": "In this school, the second bell rings for the students who are not in the room.", "score": 8.6, "status": "pending"},
+    {"id": "borrowed-weather", "title": "The Weather Lender", "hook": "In this town you can borrow tomorrow's weather, but you must return it exactly as you found it.", "score": 8.4, "status": "pending"}
+  ]
+}
