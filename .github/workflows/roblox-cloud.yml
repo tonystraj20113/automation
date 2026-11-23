@@ -56,7 +56,16 @@ jobs:
             }
           }
           if (-not $exe) {
-            winget install --id Roblox.RobloxStudio --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+            $winget = Start-Job -ScriptBlock {
+              winget install --id Roblox.RobloxStudio --accept-source-agreements --accept-package-agreements --silent --disable-interactivity
+            }
+            if (-not (Wait-Job $winget -Timeout 180)) {
+              Stop-Job $winget -ErrorAction SilentlyContinue
+              Write-Output "winget install timed out; continuing with generated scene manifest."
+            } else {
+              Receive-Job $winget -ErrorAction SilentlyContinue
+            }
+            Remove-Job $winget -Force -ErrorAction SilentlyContinue
             foreach ($d in $dirs) {
               if ($d -and (Test-Path $d)) {
                 $exe = Get-ChildItem $d -Recurse -Filter RobloxStudioBeta.exe -ErrorAction SilentlyContinue | Select-Object -First 1
