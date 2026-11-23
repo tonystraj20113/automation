@@ -1,0 +1,52 @@
+name: StoryFacts Shorts (Mon-Fri)
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  short:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: System deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libcairo2 libpango-1.0-0 libpangocairo-1.0-0
+      - name: Python deps
+        run: pip install -r requirements.txt
+      - name: Render + schedule on YouTube
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          YOUTUBE_CLIENT_SECRET_B64: ${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}
+          YOUTUBE_TOKEN_B64: ${{ secrets.YOUTUBE_TOKEN_B64 }}
+          YT_PUBLISH_PRIVACY: ${{ secrets.YT_PUBLISH_PRIVACY }}
+        run: python -m src.run_shorts
+      - name: Stage release asset
+        run: cp "$(ls -t output/short-*.mp4 | head -1)" output/latest-short.mp4
+      - name: Create public media URL (GitHub Release)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: short-${{ github.run_id }}
+          files: output/latest-short.mp4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish to Instagram Reels
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          RELEASE_URL: https://github.com/${{ github.repository }}/releases/download/short-${{ github.run_id }}/latest-short.mp4
+        run: python -m src.run_shorts --ig-only --release-url "$RELEASE_URL"
+      - name: Save story metadata for the weekly long video
+        run: |
+          git config user.name "storyfacts-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/shorts || true
+          git commit -m "story metadata $(date -u +%F)" || true
+          git push || true

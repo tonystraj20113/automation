@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <radialGradient id="bg" cx="42%" cy="34%" r="78%">
+      <stop offset="0%" stop-color="#FFFCF7"/>
+      <stop offset="100%" stop-color="#EDE2D5"/>
+    </radialGradient>
+    <linearGradient id="bodyGrad" x1="18%" y1="8%" x2="82%" y2="92%">
+      <stop offset="0%" stop-color="#E8B99B"/>
+      <stop offset="42%" stop-color="#C99576"/>
+      <stop offset="100%" stop-color="#A27055"/>
+    </linearGradient>
+    <linearGradient id="headGrad" x1="20%" y1="6%" x2="80%" y2="96%">
+      <stop offset="0%" stop-color="#F0C6A9"/>
+      <stop offset="45%" stop-color="#D2A183"/>
+      <stop offset="100%" stop-color="#AC7D61"/>
+    </linearGradient>
+    <linearGradient id="pawGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#EFD0B7"/>
+      <stop offset="100%" stop-color="#B98D6F"/>
+    </linearGradient>
+    <radialGradient id="cheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F6B394" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#F6B394" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <clipPath id="bodyClip">
+      <path d="M250 190 C190 190 150 235 138 305 C128 365 155 425 205 438 C230 444 270 444 295 438 C345 425 372 365 362 305 C350 235 310 190 250 190 Z"/>
+    </clipPath>
+    <clipPath id="headClip">
+      <ellipse cx="250" cy="150" rx="94" ry="84"/>
+    </clipPath>
+  </defs>
+
+  <rect width="500" height="500" fill="url(#bg)"/>
+
+  <!-- grounded cast shadow -->
+  <ellipse cx="256" cy="452" rx="122" ry="16" fill="#7A5A44" opacity="0.30" filter="url(#softShadow)"/>
+  <ellipse cx="250" cy="450" rx="104" ry="10" fill="#8A6A50" opacity="0.22"/>
+
+  <!-- tail: dark underside then lit top -->
+  <path d="M344 360 Q418 348 412 276 Q409 240 382 226" fill="none" stroke="#8E6048" stroke-width="32" stroke-linecap="round"/>
+  <path d="M344 354 Q410 342 405 280 Q402 250 384 236" fill="none" stroke="url(#bodyGrad)" stroke-width="24" stroke-linecap="round"/>
+  <path d="M386 232 Q401 248 402 268" fill="none" stroke="#FFD9A8" stroke-width="5" stroke-linecap="round" opacity="0.75" filter="url(#softGlow)"/>
+
+  <!-- ears -->
+  <path d="M188 106 L170 42 Q167 32 177 38 L230 86 Z" fill="#A8795D"/>
+  <path d="M312 106 L330 42 Q333 32 323 38 L270 86 Z" fill="#B5896C"/>
+  <path d="M194 94 L182 56 L218 88 Z" fill="#E8BCA2"/>
+  <path d="M306 94 L318 56 L282 88 Z" fill="#DFAE93"/>
+
+  <!-- body with gradient volume -->
+  <path d="M250 190 C190 190 150 235 138 305 C128 365 155 425 205 438 C230 444 270 444 295 438 C345 425 372 365 362 305 C350 235 310 190 250 190 Z" fill="url(#bodyGrad)"/>
+
+  <!-- faceted planes: light and shadow, clipped to body -->
+  <g clip-path="url(#bodyClip)">
+    <polygon points="128,300 250,188 230,302" fill="#FFE6D2" opacity="0.14"/>
+    <polygon points="250,188 372,300 270,302" fill="#7A5A48" opacity="0.09"/>
+    <polygon points="128,300 230,302 150,402" fill="#7A5A48" opacity="0.08"/>
+    <polygon points="372,300 270,302 352,402" fill="#FFE6D2" opacity="0.07"/>
+    <polygon points="230,302 270,302 250,392" fill="#FFF0E2" opacity="0.10"/>
+    <polygon points="150,402 230,302 250,444" fill="#FFF0E2" opacity="0.06"/>
+    <polygon points="352,402 270,302 250,444" fill="#6B4A38" opacity="0.09"/>
+    <polygon points="128,372 250,444 150,402" fill="#6B4A38" opacity="0.07"/>
+    <!-- ambient occlusion under head and paws -->
+    <ellipse cx="250" cy="212" rx="78" ry="26" fill="#3E1708" opacity="0.28" filter="url(#softShadow)"/>
+    <ellipse cx="250" cy="366" rx="96" ry="30" fill="#3E1708" opacity="0.18" filter="url(#softShadow)"/>
+  </g>
+
+  <!-- head with gradient volume -->
+  <ellipse cx="250" cy="150" rx="94" ry="84" fill="url(#headGrad)"/>
+  <g clip-path="url(#headClip)">
+    <polygon points="150,142 250,64 238,150" fill="#FFF0E2" opacity="0.16"/>
+    <polygon points="250,64 350,142 262,150" fill="#7A5A48" opacity="0.09"/>
+    <polygon points="150,142 238,150 168,222" fill="#7A5A48" opacity="0.07"/>
+    <polygon points="350,142 262,150 332,222" fill="#FFF0E2" opacity="0.07"/>
+    <polygon points="238,150 262,150 250,236" fill="#FFF6EC" opacity="0.09"/>
+    <!-- soft clay highlight on forehead -->
+    <ellipse cx="214" cy="104" rx="40" ry="22" transform="rotate(-22 214 104)" fill="#FFE7CC" opacity="0.34" filter="url(#softGlow)"/>
+  </g>
+
+  <!-- blush -->
+  <ellipse cx="208" cy="186" rx="27" ry="14" fill="url(#cheek)"/>
+  <ellipse cx="292" cy="186" rx="27" ry="14" fill="url(#cheek)"/>
+
+  <!-- two dot eyes, with tiny catchlights -->
+  <circle cx="216" cy="150" r="9" fill="#1E1B19"/>
+  <circle cx="284" cy="150" r="9" fill="#1E1B19"/>
+  <circle cx="213" cy="147" r="2.6" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="281" cy="147" r="2.6" fill="#FFFFFF" opacity="0.9"/>
+
+  <!-- nose + smile -->
+  <path d="M242 174 L258 174 L250 184 Z" fill="#1E1B19"/>
+  <path d="M250 184 Q250 194 238 194" fill="none" stroke="#1E1B19" stroke-width="3" stroke-linecap="round"/>
+  <path d="M250 184 Q250 194 262 194" fill="none" stroke="#1E1B19" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- whiskers -->
+  <g stroke="#2A2220" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
+    <line x1="196" y1="172" x2="158" y2="164"/>
+    <line x1="196" y1="180" x2="154" y2="182"/>
+    <line x1="198" y1="188" x2="162" y2="198"/>
+    <line x1="304" y1="172" x2="342" y2="164"/>
+    <line x1="304" y1="180" x2="346" y2="182"/>
+    <line x1="302" y1="188" x2="338" y2="198"/>
+  </g>
+
+  <!-- folded paws, with contact shadow -->
+  <ellipse cx="250" cy="352" rx="72" ry="14" fill="#3E1708" opacity="0.20" filter="url(#softShadow)"/>
+  <ellipse cx="216" cy="332" rx="35" ry="23" transform="rotate(-12 216 332)" fill="url(#pawGrad)"/>
+  <ellipse cx="284" cy="332" rx="35" ry="23" transform="rotate(12 284 332)" fill="url(#pawGrad)"/>
+  <path d="M204 322 Q216 315 228 322" fill="none" stroke="#8E3C1B" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M272 322 Q284 315 296 322" fill="none" stroke="#8E3C1B" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="206" cy="324" rx="12" ry="6" transform="rotate(-18 206 324)" fill="#FFE0BE" opacity="0.45"/>
+  <ellipse cx="274" cy="324" rx="12" ry="6" transform="rotate(18 274 324)" fill="#FFE0BE" opacity="0.45"/>
+
+  <!-- feet -->
+  <ellipse cx="202" cy="432" rx="31" ry="15" fill="#C35E30"/>
+  <ellipse cx="298" cy="432" rx="31" ry="15" fill="#B35328"/>
+  <ellipse cx="196" cy="427" rx="14" ry="5" fill="#FFD9B4" opacity="0.4"/>
+  <ellipse cx="292" cy="427" rx="14" ry="5" fill="#FFD9B4" opacity="0.35"/>
+
+  <!-- warm rim light -->
+  <path d="M172 118 Q150 214 144 300" fill="none" stroke="#FFE2B4" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
+  <path d="M168 112 Q200 70 244 68" fill="none" stroke="#FFE2B4" stroke-width="7" stroke-linecap="round" opacity="0.65"/>
+</svg>

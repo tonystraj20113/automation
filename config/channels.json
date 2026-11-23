@@ -1,0 +1,30 @@
+{
+  "brand": {
+    "name": "StoryFacts",
+    "language": "en",
+    "niche": "Entertainment / Facts told as stories",
+    "short_seconds": 30,
+    "long_minutes": 8,
+    "shorts_per_week": 5,
+    "mascot": "assets/mascot.svg",
+    "palette": {
+      "clay": "#C99576",
+      "clay_light": "#E8B99B",
+      "cream": "#FBF6EF",
+      "ink": "#2A1F1A",
+      "accent": "#D9A441"
+    }
+  },
+  "competitors": [
+    {"platform": "youtube", "handle": "@Gneef", "url": "https://youtube.com/@gneef", "focus": "what-if rules, short punchy titles, 2:18 median Shorts"},
+    {"platform": "youtube", "handle": "@RicksClips3000", "url": "https://youtube.com/@ricksclips3000", "focus": "voice-over fact explainers, 30M+ views on original research"},
+    {"platform": "youtube", "handle": "@mostlycanonuniverse", "url": "https://youtube.com/@mostlycanonuniverse", "focus": "UNCONFIRMED - verify before mining"},
+    {"platform": "instagram", "handle": "rinslystories", "url": "https://www.instagram.com/rinslystories/", "focus": "Roblox superhero storylines, 26.9K followers"},
+    {"platform": "instagram", "handle": "famous_viral67", "url": "https://www.instagram.com/famous_viral67/", "focus": "AI/Roblox viral storylines, high post volume"}
+  ],
+  "avoid": [
+    "copying a competitor's exact script, title or thumbnail",
+    "reposting watermarked clips",
+    "unverified claims presented as fact"
+  ]
+}
