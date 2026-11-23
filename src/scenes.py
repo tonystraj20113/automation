@@ -203,6 +203,35 @@ def _birds(d, w, h, pal, rng, count=5):
               fill=pal["ink"], width=max(1, int(w*0.002)))
 
 
+def _foreground(d, w, h, pal, rng, style):
+    """Break up the lower third so it never reads as a flat empty template."""
+    if style == "ukiyo-e":
+        for i in range(10):
+            y = h * (0.76 + i * 0.024)
+            amp = h * 0.011
+            pts = [(x, y + math.sin(x / w * math.pi * 6 + i) * amp)
+                   for x in range(0, w + 20, 14)]
+            d.line(pts, fill=_rgba(pal["foam"], 55 + i * 7),
+                   width=max(1, int(w * 0.002)))
+        for _ in range(60):
+            x, y = rng.uniform(0, w), rng.uniform(h * 0.74, h)
+            r = w * rng.uniform(0.002, 0.006)
+            d.ellipse((x-r, y-r, x+r, y+r),
+                      fill=_rgba(pal["foam"], rng.randint(35, 110)))
+    else:
+        for _ in range(55):
+            x, y = rng.uniform(0, w), rng.uniform(h * 0.72, h)
+            rw = w * rng.uniform(0.008, 0.026)
+            rh = rw * rng.uniform(0.35, 0.8)
+            col = _mix(pal["ground"], pal["hill_near"], rng.random() * 0.55)
+            d.ellipse((x-rw, y-rh, x+rw, y+rh), fill=col)
+        for _ in range(35):
+            x, y = rng.uniform(0, w), rng.uniform(h * 0.70, h * 0.95)
+            gh = h * rng.uniform(0.008, 0.026)
+            d.line((x, y, x + rng.uniform(-w*.012, w*.012), y - gh),
+                   fill=_rgba(pal["hill_near"], 110), width=max(1, int(w*0.003)))
+
+
 # ---------------------------------------------------------------------------
 # Prop painter - recognizable objects tied to the story
 # ---------------------------------------------------------------------------
@@ -377,6 +406,10 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
             _stars(d, w, h, pal, rng, 50)
         _clouds(img, w, h, pal, rng, 5)
 
+    # foreground texture so the lower third is never a flat empty block
+    d = ImageDraw.Draw(img)
+    _foreground(d, w, h, pal, rng, style)
+
     # props float in the mid-ground with a soft shadow
     if props:
         positions = [(w * 0.24, h * 0.40), (w * 0.76, h * 0.46)]
@@ -406,7 +439,7 @@ def compose_scene(spec, w, h, mascot_img=None, index=0):
 
     # film grain + vignette for a tactile, finished look
     grain = Image.effect_noise((w, h), 14).convert("L").convert("RGBA")
-    grain.putalpha(18)
+    grain.putalpha(26)
     img.alpha_composite(grain)
     vig = Image.new("L", (w, h), 0)
     vd = ImageDraw.Draw(vig)

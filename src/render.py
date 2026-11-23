@@ -132,6 +132,10 @@ def _overlay(img, caption, title, index, total):
         d.text(((w - tw)//2, ty), line, font=cf, fill=(255, 252, 245, 255))
         ty += lh
 
+    # bottom brand line
+    d.text((int(s * 0.06), h - int(s * 0.055)), "TRUE STORIES, TOLD SMALL",
+           font=font(int(s * 0.022)), fill=(255, 250, 240, 130))
+
     # progress dots
     dot_r = max(3, int(s * 0.007))
     gap = dot_r * 3
