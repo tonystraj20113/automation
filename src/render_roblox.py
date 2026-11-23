@@ -14,8 +14,9 @@ def render(work_dir, dur, out_path, preview=False, workers=2):
     work.mkdir(parents=True, exist_ok=True)
     for name in KEEP:
         src = work / name if name in ("scene.js", "timeline.js") else RENDERER / name
-        if src.exists():
-            shutil.copy2(src, work / name)
+        dst = work / name
+        if src.exists() and src.resolve() != dst.resolve():
+            shutil.copy2(src, dst)
     (work / "audio").mkdir(exist_ok=True)
     shutil.copy2(work / "mix.wav", work / "audio" / "mix.wav")
 

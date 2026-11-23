@@ -214,7 +214,7 @@ def build(script, out_dir, place_name="film.rbxl"):
     if exe:
         print("[studio] launching headless Studio in the cloud runner")
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
             text = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
             if not text:
                 text = (proc.stdout or "") + "\n" + (proc.stderr or "")
