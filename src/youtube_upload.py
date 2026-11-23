@@ -23,7 +23,8 @@ def _service():
 
 def upload(path, title, description, tags, publish_at=None, category_id="24"):
     privacy = env("YT_PUBLISH_PRIVACY", "private")
-    status = {"privacyStatus": privacy, "selfDeclaredMadeForKids": True}
+    kids = env("YT_MADE_FOR_KIDS", "false").lower() == "true"
+    status = {"privacyStatus": privacy, "selfDeclaredMadeForKids": kids}
     if publish_at:
         status["privacyStatus"] = "private"
         status["publishAt"] = publish_at

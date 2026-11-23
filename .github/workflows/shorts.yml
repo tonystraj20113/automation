@@ -27,6 +27,7 @@ jobs:
           YOUTUBE_CLIENT_SECRET_B64: ${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}
           YOUTUBE_TOKEN_B64: ${{ secrets.YOUTUBE_TOKEN_B64 }}
           YT_PUBLISH_PRIVACY: ${{ secrets.YT_PUBLISH_PRIVACY }}
+          YT_MADE_FOR_KIDS: ${{ secrets.YT_MADE_FOR_KIDS }}
         run: python -m src.run_shorts
       - name: Stage release asset
         run: cp "$(ls -t output/short-*.mp4 | head -1)" output/latest-short.mp4
